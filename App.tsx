@@ -1,7 +1,46 @@
-import React from "react";
+import React, { useState } from "react";
 import { StyleSheet, Text, View, Image, TouchableOpacity } from "react-native";
+import * as ImagePicker from "expo-image-picker";
+
+type SelectedImage = {
+  localUrl: string;
+};
 
 export default function App() {
+  let [selectedImage, setSelectedImage] = useState<SelectedImage | null>(null);
+
+  let openImagePickerAsync = async () => {
+    let permissionResult = await ImagePicker.requestCameraRollPermissionsAsync();
+
+    if (permissionResult.granted == false) {
+      alert("Permission to access camera roll is required!");
+      return;
+    }
+    let pickerResult = await ImagePicker.launchImageLibraryAsync();
+    if (pickerResult.cancelled === true) {
+      return;
+    }
+    setSelectedImage({ localUrl: pickerResult.uri });
+  };
+
+  if (selectedImage !== null) {
+    return (
+      <View style={styles.container}>
+        <Image
+          source={{ uri: selectedImage.localUrl }}
+          style={styles.thumbnail}
+        />
+        <Text style={styles.insturctions}>
+          To share a photo from your phone with a friend, just press the button
+          below!
+        </Text>
+        <TouchableOpacity onPress={openImagePickerAsync} style={styles.button}>
+          <Text style={styles.buttonText}>Pick a Photo</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <Image
@@ -12,10 +51,7 @@ export default function App() {
         To share a photo from your phone with a friend, just press the button
         below!
       </Text>
-      <TouchableOpacity
-        onPress={() => alert("Hello, world!")}
-        style={styles.button}
-      >
+      <TouchableOpacity onPress={openImagePickerAsync} style={styles.button}>
         <Text style={styles.buttonText}>Pick a Photo</Text>
       </TouchableOpacity>
     </View>
@@ -47,5 +83,10 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 20,
     color: "#fff"
+  },
+  thumbnail: {
+    width: 300,
+    height: 300,
+    resizeMode: "contain"
   }
 });
