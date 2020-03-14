@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { StyleSheet, Text, View, Image, TouchableOpacity } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import * as Sharing from "expo-sharing";
 
 type SelectedImage = {
   localUrl: string;
@@ -23,6 +24,16 @@ export default function App() {
     setSelectedImage({ localUrl: pickerResult.uri });
   };
 
+  let openShareDialogAsync = async () => {
+    if (!(await Sharing.isAvailableAsync())) {
+      alert(`Uh oh, sharing isn't available on your platform`);
+      return;
+    }
+    if (selectedImage !== null) {
+      Sharing.shareAsync(selectedImage?.localUrl);
+    }
+  };
+
   if (selectedImage !== null) {
     return (
       <View style={styles.container}>
@@ -30,12 +41,8 @@ export default function App() {
           source={{ uri: selectedImage.localUrl }}
           style={styles.thumbnail}
         />
-        <Text style={styles.insturctions}>
-          To share a photo from your phone with a friend, just press the button
-          below!
-        </Text>
-        <TouchableOpacity onPress={openImagePickerAsync} style={styles.button}>
-          <Text style={styles.buttonText}>Pick a Photo</Text>
+        <TouchableOpacity onPress={openShareDialogAsync} style={styles.button}>
+          <Text style={styles.buttonText}>Share this photo</Text>
         </TouchableOpacity>
       </View>
     );
